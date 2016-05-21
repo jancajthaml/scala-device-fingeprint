@@ -9,6 +9,8 @@ libraryDependencies ++= Seq(
 
 scalaVersion := "2.11.7"
 
+jsDependencies += RuntimeDOM
+
 lazy val buildJS = taskKey[Unit]("Prepare a production js build")
 buildJS.in(Compile) := {
   "rm -rf ./build" !;

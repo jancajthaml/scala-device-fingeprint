@@ -1,15 +1,181 @@
 import org.scalajs.dom
+import org.scalajs.dom.raw.{Element, Node}
 
 import scala.scalajs.js.annotation.JSExport
+import scala.util.MurmurHash
+import scala.util.hashing.MurmurHash3
 
 @JSExport
 object Fingerprint {
 
   @JSExport
-  def get() : String = {
+  def get(testString: String = "mmmmmmmmmmlli"): String = {
     dom.console.log("Hello world from Fingerprint")
-    "tbd"
+
+    // plugins
+    val fonts = fontList
+    val canvasPrint = canvasString
+    val langs = getHasLiedLanguages
+    val os = getHasLiedOs
+    // original JS version: https://gist.github.com/jancajthaml/15e4ea5b1805c0f936de2c0adc44874c
+    // return MathUtils.hash((window && window.navigator && window.navigator.userAgent ? window.navigator.userAgent : '') + '|' + (':' + screen.width + 'x' + screen.height + ':' + screen.availWidth + 'x' + screen.availHeight + ':' + screen.colorDepth + ':' + screen.deviceXDPI + ':' + screen.deviceYDPI) + '|' + pluginList + '|' + fontList + '|' + (typeof navigator !== 'undefined' && navigator.cpuClass ? navigator.cpuClass : 'unknown') + '|' + (typeof navigator !== 'undefined' && navigator.platform ? navigator.platform : 'unknown') + '|' + (typeof window.localStorage !== 'undefined') + '|' + (typeof window.sessionStorage !== 'undefined') + '|' + (typeof window.indexedDB !== 'undefined') + '|' + (typeof window.WebSocket !== 'undefined') + '|' + (typeof navigator !== 'undefined' && navigator.doNotTrack ? true : false) + '|' + String(String(new Date()).split("(")[1]).split(")").shift() + '|' + getHasLiedLanguages() + '|' + getHasLiedOs() + '|' + navigator.cookieEnabled + '|' + canvasPrint, 256);
+    // Scala version : https://github.com/scala/scala/blob/v2.10.3/src/library/scala/util/MurmurHash.scala
+    // scala.utils.MurmurHash3...
+    fonts + canvasPrint + langs + os
   }
 
+  def fontList = {
+    val fontArray = Array("Abadi MT Condensed Light", "Adobe Fangsong Std", "Adobe Hebrew", "Adobe Ming Std", "Agency FB", "Aharoni", "Andalus", "Angsana New", "AngsanaUPC", "Aparajita", "Arab", "Arabic Transparent", "Arabic Typesetting", "Arial Baltic", "Arial Black", "Arial CE", "Arial CYR", "Arial Greek", "Arial TUR", "Arial", "Batang", "BatangChe", "Bauhaus 93", "Bell MT", "Bitstream Vera Serif", "Bodoni MT", "Bookman Old Style", "Braggadocio", "Broadway", "Browallia New", "BrowalliaUPC", "Calibri Light", "Calibri", "Californian FB", "Cambria Math", "Cambria", "Candara", "Castellar", "Casual", "Centaur", "Century Gothic", "Chalkduster", "Colonna MT", "Comic Sans MS", "Consolas", "Constantia", "Copperplate Gothic Light", "Corbel", "Cordia New", "CordiaUPC", "Courier New Baltic", "Courier New CE", "Courier New CYR", "Courier New Greek", "Courier New TUR", "Courier New", "DFKai-SB", "DaunPenh", "David", "DejaVu LGC Sans Mono", "Desdemona", "DilleniaUPC", "DokChampa", "Dotum", "DotumChe", "Ebrima", "Engravers MT", "Eras Bold ITC", "Estrangelo Edessa", "EucrosiaUPC", "Euphemia", "Eurostile", "FangSong", "Forte", "FrankRuehl", "Franklin Gothic Heavy", "Franklin Gothic Medium", "FreesiaUPC", "French Script MT", "Gabriola", "Gautami", "Georgia", "Gigi", "Gisha", "Goudy Old Style", "Gulim", "GulimChe", "GungSeo", "Gungsuh", "GungsuhChe", "Haettenschweiler", "Harrington", "Hei S", "HeiT", "Heisei Kaku Gothic", "Hiragino Sans GB", "Impact", "Informal Roman", "IrisUPC", "Iskoola Pota", "JasmineUPC", "KacstOne", "KaiTi", "Kalinga", "Kartika", "Khmer UI", "Kino MT", "KodchiangUPC", "Kokila", "Kozuka Gothic Pr6N", "Lao UI", "Latha", "Leelawadee", "Levenim MT", "LilyUPC", "Lohit Gujarati", "Loma", "Lucida Bright", "Lucida Console", "Lucida Fax", "Lucida Sans Unicode", "MS Gothic", "MS Mincho", "MS PGothic", "MS PMincho", "MS Reference Sans Serif", "MS UI Gothic", "MV Boli", "Magneto", "Malgun Gothic", "Mangal", "Marlett", "Matura MT Script Capitals", "Meiryo UI", "Meiryo", "Menlo", "Microsoft Himalaya", "Microsoft JhengHei", "Microsoft New Tai Lue", "Microsoft PhagsPa", "Microsoft Sans Serif", "Microsoft Tai Le", "Microsoft Uighur", "Microsoft YaHei", "Microsoft Yi Baiti", "MingLiU", "MingLiU-ExtB", "MingLiU_HKSCS", "MingLiU_HKSCS-ExtB", "Miriam Fixed", "Miriam", "Mongolian Baiti", "MoolBoran", "NSimSun", "Narkisim", "News Gothic MT", "Niagara Solid", "Nyala", "PMingLiU", "PMingLiU-ExtB", "Palace Script MT", "Palatino Linotype", "Papyrus", "Perpetua", "Plantagenet Cherokee", "Playbill", "Prelude Bold", "Prelude Condensed Bold", "Prelude Condensed Medium", "Prelude Medium", "PreludeCompressedWGL Black", "PreludeCompressedWGL Bold", "PreludeCompressedWGL Light", "PreludeCompressedWGL Medium", "PreludeCondensedWGL Black", "PreludeCondensedWGL Bold", "PreludeCondensedWGL Light", "PreludeCondensedWGL Medium", "PreludeWGL Black", "PreludeWGL Bold", "PreludeWGL Light", "PreludeWGL Medium", "Raavi", "Rachana", "Rockwell", "Rod", "Sakkal Majalla", "Sawasdee", "Script MT Bold", "Segoe Print", "Segoe Script", "Segoe UI Light", "Segoe UI Semibold", "Segoe UI Symbol", "Segoe UI", "Shonar Bangla", "Showcard Gothic", "Shruti", "SimHei", "SimSun", "SimSun-ExtB", "Simplified Arabic Fixed", "Simplified Arabic", "Snap ITC", "Sylfaen", "Symbol", "Tahoma", "Times New Roman Baltic", "Times New Roman CE", "Times New Roman CYR", "Times New Roman Greek", "Times New Roman TUR", "Times New Roman", "TlwgMono", "Traditional Arabic", "Trebuchet MS", "Tunga", "Tw Cen MT Condensed Extra Bold", "Ubuntu", "Umpush", "Univers", "Utopia", "Utsaah", "Vani", "Verdana", "Vijaya", "Vladimir Script", "Vrinda", "Webdings", "Wide Latin", "Wingdings")
+
+    // a font will be compared against all the three default fonts.
+    // and if it doesn't match all 3 then that font is not available.
+    val baseFonts = List("monospace", "sans-serif", "serif")
+
+    //we use m or w because these two characters take up the maximum width.
+    // And we use a LLi so that the same matching fonts can get separated
+
+
+    //we test using 72px font size, we may use any size. I guess larger the better.
+    val testSize = "72px"
+
+    val h: Node = dom.document.getElementsByTagName("body").item(0)
+
+    val s = dom.document.createElement("span")
+    //   s.style.fontSize = testSize;
+    //s.innerHTML = testString
+    var defaultWidth = Map.empty
+    var defaultHeight = Map.empty
+    baseFonts.foreach(font =>
+      dom.console.log(font)
+      //s.syle.fontFamily(font)
+      //    h.appendChild(s)
+      //    defaultWidth[baseFonts[index]] = s.offsetWidth; //width for the default font
+      //    defaultHeight[baseFonts[index]] = s.offsetHeight; //height for the defualt font
+      //    h.removeChild(s);
+    )
+
+    val fontList = fontArray.mkString(",")
+
+    "fonts"
+
+  }
+
+  def detectFont() = {
+    //    var detected = false;
+    //    for (var index in baseFonts) {
+    //      s.style.fontFamily = font + ',' + baseFonts[index]; // name of the font along with the base font for fallback.
+    //      h.appendChild(s);
+    //      var matched = s.offsetWidth != defaultWidth[baseFonts[index]] || s.offsetHeight != defaultHeight[baseFonts[index]];
+    //      h.removeChild(s);
+    //      detected = detected || matched;
+    // }
+    // detected
+  }
+
+  def canvasString = {
+
+    // try/catch for older browsers that don't support the canvas element
+    try {
+      val canvas = dom.document.createElement("canvas")
+      // attempt to give ctx a 2d canvas context value
+//      var ctx = canvas.getContext('2d');
+//      // https://www.browserleaks.com/canvas#how-does-it-work
+//      var txt = 'Apollo';
+//      ctx.textBaseline = "top";
+//      ctx.font = "14px 'Arial'";
+//      ctx.textBaseline = "alphabetic";
+//      ctx.fillStyle = "#f60";
+//      ctx.fillRect(125, 1, 62, 20);
+//      ctx.fillStyle = "#069";
+//      ctx.fillText(txt, 2, 15);
+//      ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+//      ctx.fillText(txt, 4, 17);
+//      canvasPrint = canvas.toDataURL();
+    } catch {
+      case e:Exception => dom.console.log("Canvas not supportted")// empty string if canvas element not supported
+    }
+    "canvas"
+  }
+
+
+  def getHasLiedLanguages =  {
+    //We check if navigator.language is equal to the first language of navigator.languages
+//    if (typeof navigator.languages !== 'undefined') {
+//      try {
+//        var firstLanguages = navigator.languages[0].substr(0, 2);
+//        if (firstLanguages !== navigator.language.substr(0, 2)) {
+//          return true;
+//        }
+//      } catch (err) {
+//        return true;
+//      }
+//    }
+//    return false;
+    "langs"
+  }
+
+
+
+  def getHasLiedOs =  {
+//    var userAgent = navigator.userAgent.toLowerCase();
+//    var oscpu = navigator.oscpu;
+//    var platform = navigator.platform.toLowerCase();
+//    var os;
+//    //We extract the OS from the user agent (respect the order of the if else if statement)
+//    if (userAgent.indexOf("windows phone") >= 0) {
+//      os = "Windows Phone";
+//    } else if (userAgent.indexOf("win") >= 0) {
+//      os = "Windows";
+//    } else if (userAgent.indexOf("android") >= 0) {
+//      os = "Android";
+//    } else if (userAgent.indexOf("linux") >= 0) {
+//      os = "Linux";
+//    } else if (userAgent.indexOf("iphone") >= 0 || userAgent.indexOf("ipad") >= 0) {
+//      os = "iOS";
+//    } else if (userAgent.indexOf("mac") >= 0) {
+//      os = "Mac";
+//    } else {
+//      os = "Other";
+//    }
+//    // We detect if the person uses a mobile device
+//    var mobileDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+//
+//    if (mobileDevice && os !== "Windows Phone" && os !== "Android" && os !== "iOS" && os !== "Other") {
+//      return true;
+//    }
+//
+//    // We compare oscpu with the OS extracted from the UA
+//    if (typeof oscpu !== "undefined") {
+//      oscpu = oscpu.toLowerCase();
+//      if (oscpu.indexOf("win") >= 0 && os !== "Windows" && os !== "Windows Phone") {
+//        return true;
+//      } else if (oscpu.indexOf("linux") >= 0 && os !== "Linux" && os !== "Android") {
+//        return true;
+//      } else if (oscpu.indexOf("mac") >= 0 && os !== "Mac" && os !== "iOS") {
+//        return true;
+//      } else if (oscpu.indexOf("win") === 0 && oscpu.indexOf("linux") === 0 && oscpu.indexOf("mac") >= 0 && os !== "other") {
+//        return true;
+//      }
+//    }
+//
+//    //We compare platform with the OS extracted from the UA
+//    if (platform.indexOf("win") >= 0 && os !== "Windows" && os !== "Windows Phone") {
+//      return true;
+//    } else if ((platform.indexOf("linux") >= 0 || platform.indexOf("android") >= 0 || platform.indexOf("pike") >= 0) && os !== "Linux" && os !== "Android") {
+//      return true;
+//    } else if ((platform.indexOf("mac") >= 0 || platform.indexOf("ipad") >= 0 || platform.indexOf("ipod") >= 0 || platform.indexOf("iphone") >= 0) && os !== "Mac" && os !== "iOS") {
+//      return true;
+//    } else if (platform.indexOf("win") === 0 && platform.indexOf("linux") === 0 && platform.indexOf("mac") >= 0 && os !== "other") {
+//      return true;
+//    }
+//
+//    if (typeof navigator.plugins === "undefined" && os !== "Windows" && os !== "Windows Phone") {
+//      //We are are in the case where the person uses ie, therefore we can infer that it's windows
+//      return true;
+//    }
+//
+//    return false;
+    "OSses"
+  }
 
 }
