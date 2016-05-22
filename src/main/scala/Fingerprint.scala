@@ -108,8 +108,8 @@ object Fingerprint {
       ctx.fillText(txt, 2, 15)
       ctx.fillStyle = "rgba(102, 204, 0, 0.7)"
       ctx.fillText(txt, 4, 17)
-      //canvas.toDataURL("image/png")
-      "canvas"
+      canvas.toDataURL("image/png")
+      //"canvas"
     } catch {
       case e:Exception => dom.console.log("Canvas not supportted")
       // empty string if canvas element not supported
