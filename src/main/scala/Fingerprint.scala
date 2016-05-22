@@ -1,5 +1,6 @@
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, Node}
+import org.scalajs.dom.html.{Canvas}
 
 import scala.scalajs.js.annotation.JSExport
 import scala.util.MurmurHash
@@ -76,25 +77,23 @@ object Fingerprint {
 
     // try/catch for older browsers that don't support the canvas element
     try {
-      val canvas = dom.document.createElement("canvas")
-      // attempt to give ctx a 2d canvas context value
-//      var ctx = canvas.getContext('2d');
-//      // https://www.browserleaks.com/canvas#how-does-it-work
-//      var txt = 'Apollo';
-//      ctx.textBaseline = "top";
-//      ctx.font = "14px 'Arial'";
-//      ctx.textBaseline = "alphabetic";
-//      ctx.fillStyle = "#f60";
-//      ctx.fillRect(125, 1, 62, 20);
-//      ctx.fillStyle = "#069";
-//      ctx.fillText(txt, 2, 15);
-//      ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
-//      ctx.fillText(txt, 4, 17);
-//      canvasPrint = canvas.toDataURL();
+      val canvas = dom.document.createElement("canvas").asInstanceOf[Canvas]
+      var ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+      val txt = "Apollo"
+      ctx.textBaseline = "top"
+      ctx.font = "14px 'Arial'"
+      ctx.textBaseline = "alphabetic"
+      ctx.fillStyle = "#f60"
+      ctx.fillRect(125, 1, 62, 20)
+      ctx.fillStyle = "#069"
+      ctx.fillText(txt, 2, 15)
+      ctx.fillStyle = "rgba(102, 204, 0, 0.7)"
+      ctx.fillText(txt, 4, 17)
+      canvas.toDataURL("image/png")
     } catch {
       case e:Exception => dom.console.log("Canvas not supportted")// empty string if canvas element not supported
+      ""
     }
-    "canvas"
   }
 
 
