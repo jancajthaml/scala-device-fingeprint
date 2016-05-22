@@ -16,6 +16,12 @@ trait Navigator extends Object {
 
   val language:String
 
+  val userAgent:String
+
+  //val oscpu:String
+
+  val platform:String
+
   val languages:List[String]
 
 }
@@ -31,19 +37,19 @@ object window extends GlobalScope {
 object Fingerprint {
 
   @JSExport
-  def get(testString: String = "mmmmmmmmmmlli"): String = {
+  def get(): String = {
     dom.console.log("Hello world from Fingerprint")
 
     // plugins
     val fonts = fontList
     val canvasPrint = canvasString
-    val langs = getHasLiedLanguage
-    val os = getHasLiedOs
+    val langs = isLyingAboutLanguage
+    val os = isLyingAboutOS
     // original JS version: https://gist.github.com/jancajthaml/15e4ea5b1805c0f936de2c0adc44874c
     // return MathUtils.hash((window && window.navigator && window.navigator.userAgent ? window.navigator.userAgent : '') + '|' + (':' + screen.width + 'x' + screen.height + ':' + screen.availWidth + 'x' + screen.availHeight + ':' + screen.colorDepth + ':' + screen.deviceXDPI + ':' + screen.deviceYDPI) + '|' + pluginList + '|' + fontList + '|' + (typeof navigator !== 'undefined' && navigator.cpuClass ? navigator.cpuClass : 'unknown') + '|' + (typeof navigator !== 'undefined' && navigator.platform ? navigator.platform : 'unknown') + '|' + (typeof window.localStorage !== 'undefined') + '|' + (typeof window.sessionStorage !== 'undefined') + '|' + (typeof window.indexedDB !== 'undefined') + '|' + (typeof window.WebSocket !== 'undefined') + '|' + (typeof navigator !== 'undefined' && navigator.doNotTrack ? true : false) + '|' + String(String(new Date()).split("(")[1]).split(")").shift() + '|' + getHasLiedLanguages() + '|' + getHasLiedOs() + '|' + navigator.cookieEnabled + '|' + canvasPrint, 256);
     // Scala version : https://github.com/scala/scala/blob/v2.10.3/src/library/scala/util/MurmurHash.scala
     // scala.utils.MurmurHash3...
-    "fonts: " + fonts + "\n\ncanvas: " + canvasPrint + "\n\nlanguageLie: " + langs + "\n\nOS: " +  os
+    "fonts: " + fonts + "\n\nbeacon_signature: " + canvasPrint + "\n\nlanguage_hiding: " + langs + "\n\nos_hiding: " +  os
   }
 
   def fontList = {
@@ -56,11 +62,10 @@ object Fingerprint {
     //we use m or w because these two characters take up the maximum width.
     // And we use a LLi so that the same matching fonts can get separated
 
-
     //we test using 72px font size, we may use any size. I guess larger the better.
     val testSize = "72px"
 
-    val h: Node = dom.document.getElementsByTagName("body").item(0)
+    val h:Node = dom.document.getElementsByTagName("body").item(0)
 
     val s = dom.document.createElement("span")
     //   s.style.fontSize = testSize;
@@ -117,8 +122,9 @@ object Fingerprint {
     }
   }
 
-  def getHasLiedLanguage = {
-    //FIXME know its wrong fix
+  def isLyingAboutLanguage = {
+
+    //FIXME know its wrong please fix
     val languages:List[String] = Dynamic.global.navigator.language.toString.split(",").toList
 
     val language:String = window.navigator.language
@@ -134,12 +140,14 @@ object Fingerprint {
 
 
 
-  def getHasLiedOs =  {
-//    var userAgent = navigator.userAgent.toLowerCase();
-//    var oscpu = navigator.oscpu;
-//    var platform = navigator.platform.toLowerCase();
-//    var os;
-//    //We extract the OS from the user agent (respect the order of the if else if statement)
+  def isLyingAboutOS =  {
+
+      //FIXME can be null, change to case class and match ignorecase
+      val userAgent = window.navigator.userAgent.toLowerCase
+
+      var os = "Other"
+
+      //    //We extract the OS from the user agent (respect the order of the if else if statement)
 //    if (userAgent.indexOf("windows phone") >= 0) {
 //      os = "Windows Phone";
 //    } else if (userAgent.indexOf("win") >= 0) {
@@ -155,13 +163,46 @@ object Fingerprint {
 //    } else {
 //      os = "Other";
 //    }
+
+      if (userAgent matches ".*windows phone.*") {
+        os = "Windows Phone"
+      } else if (userAgent matches ".*win.*") {
+        os = "Windows"
+      } else if (userAgent matches ".*android.*") {
+        os = "Android"
+      } else if (userAgent matches ".*linux.*") {
+        os = "Linux"
+      } else if (userAgent matches ".*mac.*") {
+        os = "Mac"
+      } else if (userAgent matches ".*iphone.*") {
+        os = "iOS"
+      } else if (userAgent matches ".*ipad.*") {
+        os = "iOS"
+      }
+
+      "false"
+
+      //FIXME can be None on some systems
+      //val oscpu = window.navigator.oscpu
+
+//    var userAgent = navigator.userAgent.toLowerCase();
+//    var oscpu = navigator.oscpu;
+//    var platform = navigator.platform.toLowerCase();
+//    var os;
+
+
+      //val platform = window.navigator.platform
+
+      //platform.toString
+
 //    // We detect if the person uses a mobile device
 //    var mobileDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 //
 //    if (mobileDevice && os !== "Windows Phone" && os !== "Android" && os !== "iOS" && os !== "Other") {
 //      return true;
 //    }
-//
+
+
 //    // We compare oscpu with the OS extracted from the UA
 //    if (typeof oscpu !== "undefined") {
 //      oscpu = oscpu.toLowerCase();
@@ -175,7 +216,8 @@ object Fingerprint {
 //        return true;
 //      }
 //    }
-//
+
+
 //    //We compare platform with the OS extracted from the UA
 //    if (platform.indexOf("win") >= 0 && os !== "Windows" && os !== "Windows Phone") {
 //      return true;
@@ -186,14 +228,15 @@ object Fingerprint {
 //    } else if (platform.indexOf("win") === 0 && platform.indexOf("linux") === 0 && platform.indexOf("mac") >= 0 && os !== "other") {
 //      return true;
 //    }
-//
+
+
 //    if (typeof navigator.plugins === "undefined" && os !== "Windows" && os !== "Windows Phone") {
 //      //We are are in the case where the person uses ie, therefore we can infer that it's windows
 //      return true;
 //    }
-//
+
 //    return false;
-    "OSses"
+    //"OSses"
   }
 
 }
