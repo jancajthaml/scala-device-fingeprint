@@ -2,34 +2,33 @@
 
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, Node}
-import org.scalajs.dom.html.{Canvas}
+import org.scalajs.dom.html.{Canvas, Span}
 
 import scala.scalajs.js.annotation.JSExport
 import scala.util.MurmurHash
 import scala.util.hashing.MurmurHash3
-
-import scala.scalajs.js.{native, GlobalScope, Object, Dynamic}
+import scala.scalajs.js.{Dynamic, GlobalScope, Object, native}
 
 
 @native
 trait Navigator extends Object {
 
-  val language:String
+  val language: String
 
-  val userAgent:String
+  val userAgent: String
 
   //val oscpu:String
 
-  val platform:String
+  val platform: String
 
-  val languages:List[String]
+  val languages: List[String]
 
 }
 
 @native
 object window extends GlobalScope {
 
-  val navigator:Navigator = native
+  val navigator: Navigator = native
 
 }
 
@@ -49,7 +48,7 @@ object Fingerprint {
     // return MathUtils.hash((window && window.navigator && window.navigator.userAgent ? window.navigator.userAgent : '') + '|' + (':' + screen.width + 'x' + screen.height + ':' + screen.availWidth + 'x' + screen.availHeight + ':' + screen.colorDepth + ':' + screen.deviceXDPI + ':' + screen.deviceYDPI) + '|' + pluginList + '|' + fontList + '|' + (typeof navigator !== 'undefined' && navigator.cpuClass ? navigator.cpuClass : 'unknown') + '|' + (typeof navigator !== 'undefined' && navigator.platform ? navigator.platform : 'unknown') + '|' + (typeof window.localStorage !== 'undefined') + '|' + (typeof window.sessionStorage !== 'undefined') + '|' + (typeof window.indexedDB !== 'undefined') + '|' + (typeof window.WebSocket !== 'undefined') + '|' + (typeof navigator !== 'undefined' && navigator.doNotTrack ? true : false) + '|' + String(String(new Date()).split("(")[1]).split(")").shift() + '|' + getHasLiedLanguages() + '|' + getHasLiedOs() + '|' + navigator.cookieEnabled + '|' + canvasPrint, 256);
     // Scala version : https://github.com/scala/scala/blob/v2.10.3/src/library/scala/util/MurmurHash.scala
     // scala.utils.MurmurHash3...
-    "fonts: " + fonts + "\n\nbeacon_signature: " + canvasPrint + "\n\nlanguage_hiding: " + langs + "\n\nos_hiding: " +  os
+    "fonts: " + fonts + "\n\nbeacon_signature: " + canvasPrint + "\n\nlanguage_hiding: " + langs + "\n\nos_hiding: " + os
   }
 
   def fontList = {
@@ -62,41 +61,35 @@ object Fingerprint {
     //we use m or w because these two characters take up the maximum width.
     // And we use a LLi so that the same matching fonts can get separated
 
+    var testString = "mmmmmmmmmmlli";
     //we test using 72px font size, we may use any size. I guess larger the better.
     val testSize = "72px"
 
-    val h:Node = dom.document.getElementsByTagName("body").item(0)
+    val h: Node = dom.document.getElementsByTagName("body").item(0)
 
-    val s = dom.document.createElement("span")
-    //   s.style.fontSize = testSize;
-    //s.innerHTML = testString
-    var defaultWidth = Map.empty
-    var defaultHeight = Map.empty
-    baseFonts.foreach(font =>
-      dom.console.log(font)
-      //s.syle.fontFamily(font)
-      //    h.appendChild(s)
-      //    defaultWidth[baseFonts[index]] = s.offsetWidth; //width for the default font
-      //    defaultHeight[baseFonts[index]] = s.offsetHeight; //height for the defualt font
-      //    h.removeChild(s);
-    )
+    val s = dom.document.createElement("span").asInstanceOf[Span]
+    s.style.fontSize = testSize
+    s.innerHTML = testString
+    var defaultWidth = Map.empty[String,String]
+    var defaultHeight = Map.empty[String,String]
+    for (font <- baseFonts) {
+      s.style.fontFamily = font
+      h.appendChild(s)
+      defaultWidth = defaultWidth ++ Map(font->s.offsetWidth.toString)
+      defaultHeight = defaultHeight ++ Map(font->s.offsetWidth.toString)
+      h.removeChild(s)
+    }
 
-    val fontList = fontArray.mkString(",")
-
-    "fonts"
-
-  }
-
-  def detectFont() = {
-    //    var detected = false;
-    //    for (var index in baseFonts) {
-    //      s.style.fontFamily = font + ',' + baseFonts[index]; // name of the font along with the base font for fallback.
+ //   var detected = false;
+ //       for (font <- baseFonts) {
+ //         s.style.fontFamily = font + ',' + font; // name of the font along with the base font for fallback.
     //      h.appendChild(s);
     //      var matched = s.offsetWidth != defaultWidth[baseFonts[index]] || s.offsetHeight != defaultHeight[baseFonts[index]];
     //      h.removeChild(s);
     //      detected = detected || matched;
     // }
     // detected
+    "fonts"
   }
 
   def canvasString = {
@@ -116,19 +109,19 @@ object Fingerprint {
       canvas.toDataURL("image/png")
       //"canvas"
     } catch {
-      case e:Exception => dom.console.log("Canvas not supportted")
-      // empty string if canvas element not supported
-      ""
+      case e: Exception => dom.console.log("Canvas not supportted")
+        // empty string if canvas element not supported
+        ""
     }
   }
 
   def isLyingAboutLanguage = {
 
     //FIXME know its wrong please fix
-    val languages:List[String] = Dynamic.global.navigator.language.toString.split(",").toList
+    val languages: List[String] = Dynamic.global.navigator.language.toString.split(",").toList
 
-    val language:String = window.navigator.language
-    val prefferedLanguage:String = languages.head
+    val language: String = window.navigator.language
+    val prefferedLanguage: String = languages.head
 
     //FIXME try to use takeLeft to handle out of bounds
     if (prefferedLanguage.substring(0, 2) != language.substring(0, 2)) {
@@ -139,103 +132,102 @@ object Fingerprint {
   }
 
 
+  def isLyingAboutOS = {
 
-  def isLyingAboutOS =  {
+    //FIXME can be null, change to case class and match ignorecase
+    val userAgent = window.navigator.userAgent.toLowerCase
 
-      //FIXME can be null, change to case class and match ignorecase
-      val userAgent = window.navigator.userAgent.toLowerCase
+    var os = "Other"
 
-      var os = "Other"
+    //    //We extract the OS from the user agent (respect the order of the if else if statement)
+    //    if (userAgent.indexOf("windows phone") >= 0) {
+    //      os = "Windows Phone";
+    //    } else if (userAgent.indexOf("win") >= 0) {
+    //      os = "Windows";
+    //    } else if (userAgent.indexOf("android") >= 0) {
+    //      os = "Android";
+    //    } else if (userAgent.indexOf("linux") >= 0) {
+    //      os = "Linux";
+    //    } else if (userAgent.indexOf("iphone") >= 0 || userAgent.indexOf("ipad") >= 0) {
+    //      os = "iOS";
+    //    } else if (userAgent.indexOf("mac") >= 0) {
+    //      os = "Mac";
+    //    } else {
+    //      os = "Other";
+    //    }
 
-      //    //We extract the OS from the user agent (respect the order of the if else if statement)
-//    if (userAgent.indexOf("windows phone") >= 0) {
-//      os = "Windows Phone";
-//    } else if (userAgent.indexOf("win") >= 0) {
-//      os = "Windows";
-//    } else if (userAgent.indexOf("android") >= 0) {
-//      os = "Android";
-//    } else if (userAgent.indexOf("linux") >= 0) {
-//      os = "Linux";
-//    } else if (userAgent.indexOf("iphone") >= 0 || userAgent.indexOf("ipad") >= 0) {
-//      os = "iOS";
-//    } else if (userAgent.indexOf("mac") >= 0) {
-//      os = "Mac";
-//    } else {
-//      os = "Other";
-//    }
+    if (userAgent matches ".*windows phone.*") {
+      os = "Windows Phone"
+    } else if (userAgent matches ".*win.*") {
+      os = "Windows"
+    } else if (userAgent matches ".*android.*") {
+      os = "Android"
+    } else if (userAgent matches ".*linux.*") {
+      os = "Linux"
+    } else if (userAgent matches ".*mac.*") {
+      os = "Mac"
+    } else if (userAgent matches ".*iphone.*") {
+      os = "iOS"
+    } else if (userAgent matches ".*ipad.*") {
+      os = "iOS"
+    }
 
-      if (userAgent matches ".*windows phone.*") {
-        os = "Windows Phone"
-      } else if (userAgent matches ".*win.*") {
-        os = "Windows"
-      } else if (userAgent matches ".*android.*") {
-        os = "Android"
-      } else if (userAgent matches ".*linux.*") {
-        os = "Linux"
-      } else if (userAgent matches ".*mac.*") {
-        os = "Mac"
-      } else if (userAgent matches ".*iphone.*") {
-        os = "iOS"
-      } else if (userAgent matches ".*ipad.*") {
-        os = "iOS"
-      }
+    "false"
 
-      "false"
+    //FIXME can be None on some systems
+    //val oscpu = window.navigator.oscpu
 
-      //FIXME can be None on some systems
-      //val oscpu = window.navigator.oscpu
-
-//    var userAgent = navigator.userAgent.toLowerCase();
-//    var oscpu = navigator.oscpu;
-//    var platform = navigator.platform.toLowerCase();
-//    var os;
-
-
-      //val platform = window.navigator.platform
-
-      //platform.toString
-
-//    // We detect if the person uses a mobile device
-//    var mobileDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-//
-//    if (mobileDevice && os !== "Windows Phone" && os !== "Android" && os !== "iOS" && os !== "Other") {
-//      return true;
-//    }
+    //    var userAgent = navigator.userAgent.toLowerCase();
+    //    var oscpu = navigator.oscpu;
+    //    var platform = navigator.platform.toLowerCase();
+    //    var os;
 
 
-//    // We compare oscpu with the OS extracted from the UA
-//    if (typeof oscpu !== "undefined") {
-//      oscpu = oscpu.toLowerCase();
-//      if (oscpu.indexOf("win") >= 0 && os !== "Windows" && os !== "Windows Phone") {
-//        return true;
-//      } else if (oscpu.indexOf("linux") >= 0 && os !== "Linux" && os !== "Android") {
-//        return true;
-//      } else if (oscpu.indexOf("mac") >= 0 && os !== "Mac" && os !== "iOS") {
-//        return true;
-//      } else if (oscpu.indexOf("win") === 0 && oscpu.indexOf("linux") === 0 && oscpu.indexOf("mac") >= 0 && os !== "other") {
-//        return true;
-//      }
-//    }
+    //val platform = window.navigator.platform
+
+    //platform.toString
+
+    //    // We detect if the person uses a mobile device
+    //    var mobileDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+    //
+    //    if (mobileDevice && os !== "Windows Phone" && os !== "Android" && os !== "iOS" && os !== "Other") {
+    //      return true;
+    //    }
 
 
-//    //We compare platform with the OS extracted from the UA
-//    if (platform.indexOf("win") >= 0 && os !== "Windows" && os !== "Windows Phone") {
-//      return true;
-//    } else if ((platform.indexOf("linux") >= 0 || platform.indexOf("android") >= 0 || platform.indexOf("pike") >= 0) && os !== "Linux" && os !== "Android") {
-//      return true;
-//    } else if ((platform.indexOf("mac") >= 0 || platform.indexOf("ipad") >= 0 || platform.indexOf("ipod") >= 0 || platform.indexOf("iphone") >= 0) && os !== "Mac" && os !== "iOS") {
-//      return true;
-//    } else if (platform.indexOf("win") === 0 && platform.indexOf("linux") === 0 && platform.indexOf("mac") >= 0 && os !== "other") {
-//      return true;
-//    }
+    //    // We compare oscpu with the OS extracted from the UA
+    //    if (typeof oscpu !== "undefined") {
+    //      oscpu = oscpu.toLowerCase();
+    //      if (oscpu.indexOf("win") >= 0 && os !== "Windows" && os !== "Windows Phone") {
+    //        return true;
+    //      } else if (oscpu.indexOf("linux") >= 0 && os !== "Linux" && os !== "Android") {
+    //        return true;
+    //      } else if (oscpu.indexOf("mac") >= 0 && os !== "Mac" && os !== "iOS") {
+    //        return true;
+    //      } else if (oscpu.indexOf("win") === 0 && oscpu.indexOf("linux") === 0 && oscpu.indexOf("mac") >= 0 && os !== "other") {
+    //        return true;
+    //      }
+    //    }
 
 
-//    if (typeof navigator.plugins === "undefined" && os !== "Windows" && os !== "Windows Phone") {
-//      //We are are in the case where the person uses ie, therefore we can infer that it's windows
-//      return true;
-//    }
+    //    //We compare platform with the OS extracted from the UA
+    //    if (platform.indexOf("win") >= 0 && os !== "Windows" && os !== "Windows Phone") {
+    //      return true;
+    //    } else if ((platform.indexOf("linux") >= 0 || platform.indexOf("android") >= 0 || platform.indexOf("pike") >= 0) && os !== "Linux" && os !== "Android") {
+    //      return true;
+    //    } else if ((platform.indexOf("mac") >= 0 || platform.indexOf("ipad") >= 0 || platform.indexOf("ipod") >= 0 || platform.indexOf("iphone") >= 0) && os !== "Mac" && os !== "iOS") {
+    //      return true;
+    //    } else if (platform.indexOf("win") === 0 && platform.indexOf("linux") === 0 && platform.indexOf("mac") >= 0 && os !== "other") {
+    //      return true;
+    //    }
 
-//    return false;
+
+    //    if (typeof navigator.plugins === "undefined" && os !== "Windows" && os !== "Windows Phone") {
+    //      //We are are in the case where the person uses ie, therefore we can infer that it's windows
+    //      return true;
+    //    }
+
+    //    return false;
     //"OSses"
   }
 
