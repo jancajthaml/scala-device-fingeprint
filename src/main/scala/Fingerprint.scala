@@ -1,3 +1,5 @@
+
+
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, Node}
 import org.scalajs.dom.html.{Canvas}
@@ -5,6 +7,25 @@ import org.scalajs.dom.html.{Canvas}
 import scala.scalajs.js.annotation.JSExport
 import scala.util.MurmurHash
 import scala.util.hashing.MurmurHash3
+
+import scala.scalajs.js.{native, GlobalScope, Object, Dynamic}
+
+
+@native
+trait Navigator extends Object {
+
+  val language:String
+
+  val languages:List[String]
+
+}
+
+@native
+object window extends GlobalScope {
+
+  val navigator:Navigator = native
+
+}
 
 @JSExport
 object Fingerprint {
@@ -16,13 +37,13 @@ object Fingerprint {
     // plugins
     val fonts = fontList
     val canvasPrint = canvasString
-    val langs = getHasLiedLanguages
+    val langs = getHasLiedLanguage
     val os = getHasLiedOs
     // original JS version: https://gist.github.com/jancajthaml/15e4ea5b1805c0f936de2c0adc44874c
     // return MathUtils.hash((window && window.navigator && window.navigator.userAgent ? window.navigator.userAgent : '') + '|' + (':' + screen.width + 'x' + screen.height + ':' + screen.availWidth + 'x' + screen.availHeight + ':' + screen.colorDepth + ':' + screen.deviceXDPI + ':' + screen.deviceYDPI) + '|' + pluginList + '|' + fontList + '|' + (typeof navigator !== 'undefined' && navigator.cpuClass ? navigator.cpuClass : 'unknown') + '|' + (typeof navigator !== 'undefined' && navigator.platform ? navigator.platform : 'unknown') + '|' + (typeof window.localStorage !== 'undefined') + '|' + (typeof window.sessionStorage !== 'undefined') + '|' + (typeof window.indexedDB !== 'undefined') + '|' + (typeof window.WebSocket !== 'undefined') + '|' + (typeof navigator !== 'undefined' && navigator.doNotTrack ? true : false) + '|' + String(String(new Date()).split("(")[1]).split(")").shift() + '|' + getHasLiedLanguages() + '|' + getHasLiedOs() + '|' + navigator.cookieEnabled + '|' + canvasPrint, 256);
     // Scala version : https://github.com/scala/scala/blob/v2.10.3/src/library/scala/util/MurmurHash.scala
     // scala.utils.MurmurHash3...
-    fonts + canvasPrint + langs + os
+    "fonts: " + fonts + "\n\ncanvas: " + canvasPrint + "\n\nlanguageLie: " + langs + "\n\nOS: " +  os
   }
 
   def fontList = {
@@ -74,8 +95,6 @@ object Fingerprint {
   }
 
   def canvasString = {
-
-    // try/catch for older browsers that don't support the canvas element
     try {
       val canvas = dom.document.createElement("canvas").asInstanceOf[Canvas]
       var ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
@@ -89,28 +108,28 @@ object Fingerprint {
       ctx.fillText(txt, 2, 15)
       ctx.fillStyle = "rgba(102, 204, 0, 0.7)"
       ctx.fillText(txt, 4, 17)
-      canvas.toDataURL("image/png")
+      //canvas.toDataURL("image/png")
+      "canvas"
     } catch {
-      case e:Exception => dom.console.log("Canvas not supportted")// empty string if canvas element not supported
+      case e:Exception => dom.console.log("Canvas not supportted")
+      // empty string if canvas element not supported
       ""
     }
   }
 
+  def getHasLiedLanguage = {
+    //FIXME know its wrong fix
+    val languages:List[String] = Dynamic.global.navigator.language.toString.split(",").toList
 
-  def getHasLiedLanguages =  {
-    //We check if navigator.language is equal to the first language of navigator.languages
-//    if (typeof navigator.languages !== 'undefined') {
-//      try {
-//        var firstLanguages = navigator.languages[0].substr(0, 2);
-//        if (firstLanguages !== navigator.language.substr(0, 2)) {
-//          return true;
-//        }
-//      } catch (err) {
-//        return true;
-//      }
-//    }
-//    return false;
-    "langs"
+    val language:String = window.navigator.language
+    val prefferedLanguage:String = languages.head
+
+    //FIXME try to use takeLeft to handle out of bounds
+    if (prefferedLanguage.substring(0, 2) != language.substring(0, 2)) {
+      "true"
+    } else {
+      "false"
+    }
   }
 
 
