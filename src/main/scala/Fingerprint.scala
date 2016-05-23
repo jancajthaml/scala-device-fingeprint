@@ -70,19 +70,19 @@ object Fingerprint {
     val s = dom.document.createElement("span").asInstanceOf[Span]
     s.style.fontSize = testSize
     s.innerHTML = testString
-    var defaultWidth = Map.empty[String,String]
-    var defaultHeight = Map.empty[String,String]
+    var defaultWidth = Map.empty[String, String]
+    var defaultHeight = Map.empty[String, String]
     for (font <- baseFonts) {
       s.style.fontFamily = font
       h.appendChild(s)
-      defaultWidth = defaultWidth ++ Map(font->s.offsetWidth.toString)
-      defaultHeight = defaultHeight ++ Map(font->s.offsetWidth.toString)
+      defaultWidth = defaultWidth ++ Map(font -> s.offsetWidth.toString)
+      defaultHeight = defaultHeight ++ Map(font -> s.offsetWidth.toString)
       h.removeChild(s)
     }
 
- //   var detected = false;
- //       for (font <- baseFonts) {
- //         s.style.fontFamily = font + ',' + font; // name of the font along with the base font for fallback.
+    //   var detected = false;
+    //       for (font <- baseFonts) {
+    //         s.style.fontFamily = font + ',' + font; // name of the font along with the base font for fallback.
     //      h.appendChild(s);
     //      var matched = s.offsetWidth != defaultWidth[baseFonts[index]] || s.offsetHeight != defaultHeight[baseFonts[index]];
     //      h.removeChild(s);
@@ -116,17 +116,23 @@ object Fingerprint {
 
   def isLyingAboutLanguage = {
 
-    //FIXME know its wrong please fix
-    val languages: List[String] = Dynamic.global.navigator.language.toString.split(",").toList
-
-    val language: String = window.navigator.language
-    val prefferedLanguage: String = languages.head
-
-    //FIXME try to use takeLeft to handle out of bounds
-    if (prefferedLanguage.substring(0, 2) != language.substring(0, 2)) {
-      "true"
-    } else {
-      "false"
+    val languages = Dynamic.global.navigator.languages.toString
+    val preferredLanguage = languages match {
+      case l: String if (l.contains(",")) => l.split(",").toList
+      case l: String => List(l)
+      case _ => List.empty[String]
+    }
+    val language = window.navigator.language
+    dom.console.log(s"Ls:$languages L:$language PL:$preferredLanguage")
+    (preferredLanguage, language) match {
+      case (ls: List[String], l: String) if (!ls.isEmpty) =>
+        try {
+//          dom.console.log("ls:"+ls.head.substring(0, 2) + "-> l:" + l.substring(0, 2))
+          ls.head.substring(0, 2) == l.substring(0, 2)
+        } catch {
+          case _ => false
+        }
+      case _ => false
     }
   }
 
