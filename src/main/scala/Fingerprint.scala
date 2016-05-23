@@ -96,7 +96,7 @@ object Fingerprint {
     try {
       val canvas = dom.document.createElement("canvas").asInstanceOf[Canvas]
       var ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-      val txt = "Apollo"
+      val txt = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`~1!2@3#4$5%6^7&8*9(0)-_=+[{]}|;:\',<.>/?"
       ctx.textBaseline = "top"
       ctx.font = "14px 'Arial'"
       ctx.textBaseline = "alphabetic"
@@ -107,7 +107,6 @@ object Fingerprint {
       ctx.fillStyle = "rgba(102, 204, 0, 0.7)"
       ctx.fillText(txt, 4, 17)
       canvas.toDataURL("image/png")
-      //"canvas"
     } catch {
       case e: Exception => dom.console.log("Canvas not supportted")
         // empty string if canvas element not supported
