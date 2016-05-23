@@ -17,11 +17,15 @@ trait Navigator extends Object {
 
   val userAgent: String
 
-  //val oscpu:String
+  val oscpu:String          // FIXME does not work
 
   val platform: String
 
   val languages: List[String]
+
+  val maxTouchPoints : Int    // FIXME does not work
+
+  val msMaxTouchPoints : Int    // FIXME does not work
 
 }
 
@@ -95,7 +99,7 @@ object Fingerprint {
   def canvasString = {
     try {
       val canvas = dom.document.createElement("canvas").asInstanceOf[Canvas]
-      var ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+      val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
       val txt = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`~1!2@3#4$5%6^7&8*9(0)-_=+[{]}|;:\',<.>/?"
       ctx.textBaseline = "top"
       ctx.font = "14px 'Arial'"
@@ -114,6 +118,11 @@ object Fingerprint {
     }
   }
 
+  /**
+    * compares languages and returns true if preffered is first in languages
+    *
+    * @return
+    */
   def isLyingAboutLanguage = {
 
     val languages = Dynamic.global.navigator.languages.toString
@@ -130,7 +139,7 @@ object Fingerprint {
 //          dom.console.log("ls:"+ls.head.substring(0, 2) + "-> l:" + l.substring(0, 2))
           ls.head.substring(0, 2) == l.substring(0, 2)
         } catch {
-          case _ => false
+          case e:Exception => false
         }
       case _ => false
     }
@@ -139,27 +148,10 @@ object Fingerprint {
 
   def isLyingAboutOS = {
 
-    //FIXME can be null, change to case class and match ignorecase
+    //FIXME can be null, change to case class and match ignore case
     val userAgent = window.navigator.userAgent.toLowerCase
-
+    dom.console.log(s"OS: $userAgent")
     var os = "Other"
-
-    //    //We extract the OS from the user agent (respect the order of the if else if statement)
-    //    if (userAgent.indexOf("windows phone") >= 0) {
-    //      os = "Windows Phone";
-    //    } else if (userAgent.indexOf("win") >= 0) {
-    //      os = "Windows";
-    //    } else if (userAgent.indexOf("android") >= 0) {
-    //      os = "Android";
-    //    } else if (userAgent.indexOf("linux") >= 0) {
-    //      os = "Linux";
-    //    } else if (userAgent.indexOf("iphone") >= 0 || userAgent.indexOf("ipad") >= 0) {
-    //      os = "iOS";
-    //    } else if (userAgent.indexOf("mac") >= 0) {
-    //      os = "Mac";
-    //    } else {
-    //      os = "Other";
-    //    }
 
     if (userAgent matches ".*windows phone.*") {
       os = "Windows Phone"
@@ -177,10 +169,19 @@ object Fingerprint {
       os = "iOS"
     }
 
-    "false"
 
     //FIXME can be None on some systems
-    //val oscpu = window.navigator.oscpu
+    val nav = window.navigator
+    try {
+      dom.console.log(s"OScpu:" + nav.oscpu)
+    } catch {
+      case _ => dom.console.log("E...")
+    }
+
+//    val platform = window.navigator.platform
+
+//    val mobileDevice = window.navigator.maxTouchPoints > 0 || window.navigator.msMaxTouchPoints > 0
+//    dom.console.log("Is mobile " + mobileDevice)
 
     //    var userAgent = navigator.userAgent.toLowerCase();
     //    var oscpu = navigator.oscpu;
@@ -234,6 +235,8 @@ object Fingerprint {
 
     //    return false;
     //"OSses"
+
+    "false"
   }
 
 }

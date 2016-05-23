@@ -1,3 +1,6 @@
+
+# WIP - does not work yet
+
 # scala-device-fingeprint
 
 Device fingerprint in ScalaJS
