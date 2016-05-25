@@ -3,6 +3,13 @@ package scalajs.fingerprint
 import scala.scalajs.js._
 
 @native
+trait Plugin extends Object {
+  val description : String
+  val name: String
+}
+
+
+@native
 trait Navigator extends Object {
 
   val language: String
@@ -19,8 +26,9 @@ trait Navigator extends Object {
 
   val msMaxTouchPoints: Int
 
-
+  val plugins: Array[Plugin]
 }
+
 
 @native
 object window extends GlobalScope {
@@ -29,4 +37,8 @@ object window extends GlobalScope {
 
 }
 
-
+//
+//@JSName("navigator.plugins")
+//@js.native
+//class Plugins extends js.Array
+//
