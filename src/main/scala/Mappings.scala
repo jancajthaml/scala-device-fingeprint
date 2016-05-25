@@ -4,8 +4,16 @@ import scala.scalajs.js._
 
 @native
 trait Plugin extends Object {
-  val description : String
+  val description: String
   val name: String
+}
+
+@native
+object screen extends GlobalScope {
+  val width: Object = native   // FIXME does not work
+  val height: Object = native   // FIXME does not work
+//  val availWidth: Int = native
+//  val availHeight: Int = native
 }
 
 

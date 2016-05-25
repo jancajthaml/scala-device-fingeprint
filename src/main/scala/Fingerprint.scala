@@ -21,31 +21,34 @@ object Fingerprint {
   @JSExport
   def get(fonts: Boolean = true, canvas: Boolean = true, languages: Boolean = true, os: Boolean = true): String = {
 
-    // plugins
-    val fontsvalue = if (fonts) validateFonts else None
-    val canvasPrint = if (canvas) Some(canvasString) else None
-    val langs = if (languages) isLyingAboutLanguage else None
-    val osvalue = if (os) isLyingAboutOS else None
+    try {
+      // plugins
+      val fontsvalue = if (fonts) validateFonts else None
+      val canvasPrint = if (canvas) Some(canvasString) else None
+      val langs = if (languages) isLyingAboutLanguage else None
+      val osvalue = if (os) isLyingAboutOS else None
 
-    // String to hash
-    // val toHash = (window && window.navigator && window.navigator.userAgent ? window.navigator.userAgent : '') + '|'
-    // + (':' + screen.width + 'x' + screen.height + ':' + screen.availWidth + 'x' + screen.availHeight + ':'
-    // + screen.colorDepth + ':' + screen.deviceXDPI + ':' + screen.deviceYDPI) + '|' + pluginList + '|' + fontList
-    // + '|' + (typeof navigator !== 'undefined' && navigator.cpuClass ? navigator.cpuClass : 'unknown') + '|'
-    // + (typeof navigator !== 'undefined' && navigator.platform ? navigator.platform : 'unknown') + '|'
-    // + (typeof window.localStorage !== 'undefined') + '|' + (typeof window.sessionStorage !== 'undefined') + '|'
-    // + (typeof window.indexedDB !== 'undefined') + '|' + (typeof window.WebSocket !== 'undefined') + '|'
-    // + (typeof navigator !== 'undefined' && navigator.doNotTrack ? true : false) + '|'
-    // + String(String(new Date()).split("(")[1]).split(")").shift() + '|' + getHasLiedLanguages() + '|'
-    // + getHasLiedOs() + '|' + navigator.cookieEnabled + '|' + canvasPrint, 256);
+      // String to hash
+      // val toHash = (window && window.navigator && window.navigator.userAgent ? window.navigator.userAgent : '') + '|'
+      // + (':' + screen.width + 'x' + screen.height + ':' + screen.availWidth + 'x' + screen.availHeight + ':'
+      // + screen.colorDepth + ':' + screen.deviceXDPI + ':' + screen.deviceYDPI) + '|' + pluginList + '|' + fontList
+      // + '|' + (typeof navigator !== 'undefined' && navigator.cpuClass ? navigator.cpuClass : 'unknown') + '|'
+      // + (typeof navigator !== 'undefined' && navigator.platform ? navigator.platform : 'unknown') + '|'
+      // + (typeof window.localStorage !== 'undefined') + '|' + (typeof window.sessionStorage !== 'undefined') + '|'
+      // + (typeof window.indexedDB !== 'undefined') + '|' + (typeof window.WebSocket !== 'undefined') + '|'
+      // + (typeof navigator !== 'undefined' && navigator.doNotTrack ? true : false) + '|'
+      // + String(String(new Date()).split("(")[1]).split(")").shift() + '|' + getHasLiedLanguages() + '|'
+      // + getHasLiedOs() + '|' + navigator.cookieEnabled + '|' + canvasPrint, 256);
 
-    //    val screen = window.screen.
-    //    val toHash = window.navigator.userAgent + "|" +
-    //      (":" + screen.width + "x" + screen.height + ":" + screen.availWidth + "x" + screen.availHeight +":")
-    //        + screen.colorDepth + ":" + "screen.deviceXDPI" + ":" + "screen.deviceYDPI") +
-    val toHash = "|" + pluginList
-    log("Plugins:" + pluginList)
-    MurmurHash3.stringHash(toHash).toString
+      log("Screen: " + screen.width)
+      val toHash = window.navigator.userAgent + "|" + ":" + screen.width // + "x" + screen.height //+ ":" + screen.availWidth + "x" + screen.availHeight +":")
+      //        + screen.colorDepth + ":" + "screen.deviceXDPI" + ":" + "screen.deviceYDPI") +
+      //        + "|" + pluginList
+      log("Plugins:" + pluginList)
+      MurmurHash3.stringHash(toHash).toString
+    }catch {
+      case t:Throwable => "Fingerprint error" + t
+    }
   }
 
   def pluginList = window.navigator.plugins.map(plugin => plugin.name).mkString(",")
