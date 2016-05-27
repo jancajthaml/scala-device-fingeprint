@@ -235,7 +235,7 @@ object Fingerprint {
       }
       return M.join(' ')
     } catch (err) {
-      return 'Error'
+      return 'unknown'
     }
     */
     "browser"
@@ -260,7 +260,7 @@ object Fingerprint {
           ctx.fillText(strText, 4, 17)
           return canvas.toDataURL('image/png')
         } catch (err) {
-          return err
+          return ''
         }
       */
       val canvas = dom.document.createElement("canvas").asInstanceOf[Canvas]
@@ -430,7 +430,7 @@ object Fingerprint {
       try {
         return navigator.javaEnabled() ? 'true' : 'false'
       } catch (err) {
-        return 'unknown'
+        return 'false'
       }
     */
     false
@@ -445,7 +445,7 @@ object Fingerprint {
           return 'false'
         }
       } catch (err) {
-        return 'unknown'
+        return 'false'
       }
     */
     true
