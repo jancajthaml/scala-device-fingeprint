@@ -285,7 +285,7 @@ object Fingerprint {
     }
   }
 
-  def webglString: String {
+  def webglString: String = {
     /*
       {
         var gl = null
@@ -451,7 +451,7 @@ object Fingerprint {
     true
   }
 
-  def osString: Boolean = {
+  def osString: String = {
     /*
     try {
       // system
