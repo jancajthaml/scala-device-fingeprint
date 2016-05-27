@@ -557,7 +557,8 @@ object Fingerprint {
   }
 
   /**
-    * compares languages and returns true if preferred is first in languages
+    * compares languages and returns true if preferred is not first in all
+    * preffered languages
     *
     * @return
     */
@@ -574,7 +575,7 @@ object Fingerprint {
       case (ls: List[String], l: String) if (!ls.isEmpty) =>
         try {
           //          log("ls:"+ls.head.substring(0, 2) + "-> l:" + l.substring(0, 2))
-          ls.head.substring(0, 2) == l.substring(0, 2)
+          ls.head.substring(0, 2) != l.substring(0, 2)
         } catch {
           case e: Exception => false
         }
