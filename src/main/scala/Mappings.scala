@@ -35,6 +35,10 @@ trait Navigator extends Object {
   val msMaxTouchPoints: Int
 
   val plugins: Array[Plugin]
+
+  def javaEnabled(): Boolean
+
+  val cookieEnabled: Boolean
 }
 
 

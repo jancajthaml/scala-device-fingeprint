@@ -3,8 +3,10 @@ package scalajs.fingerprint
 import org.scalajs.dom
 import org.scalajs.dom.html.{Canvas, Span}
 import org.scalajs.dom.raw.Node
+import org.scalajs.dom.raw.WebGLRenderingContext
 
 import scala.scalajs.js.Dynamic
+import scala.scalajs.js.typedarray.Float32Array
 import scala.scalajs.js.annotation.JSExport
 import scala.util.hashing.MurmurHash3
 
@@ -19,14 +21,29 @@ object Fingerprint {
   def log(msg: String) = if (debug) dom.console.log(msg)
 
   @JSExport
-  def get(fonts: Boolean = true, canvas: Boolean = true, languages: Boolean = true, os: Boolean = true): String = {
+  def get(
+    fonts: Boolean = true,
+    canvas: Boolean = true,
+    webgl: Boolean = true,
+    languages: Boolean = true,
+    os: Boolean = true,
+    java: Boolean = true,
+    cookies: Boolean = true
+  ): String = {
 
     try {
       // plugins
       val fontsvalue = if (fonts) validateFonts else None
       val canvasPrint = if (canvas) Some(canvasString) else None
+      val webglPrint = if (webgl) Some(webglString) else None
       val langs = if (languages) isLyingAboutLanguage else None
       val osvalue = if (os) isLyingAboutOS else None
+      val javatest = if (java) javaEnabled else None
+      val cookiestest = if (cookies) cookiesEnabled else None
+
+      log("java: " + javatest)
+      log("cookies: " + cookiestest)
+
 
       /*
         var getFingerprint = () => {
@@ -286,27 +303,98 @@ object Fingerprint {
   }
 
   def webglString: String = {
+    try {
+      val canvas = dom.document.createElement("canvas").asInstanceOf[Canvas]
+      val gl = canvas.getContext("webgl").asInstanceOf[WebGLRenderingContext]
+
+
+
+
+
+      //FIXME maybe unsupported by scalajs
+      // || canvas.getContext("experimental-webgl")
+
+      var vertexPosBuffer = gl.createBuffer()
+      gl.bindBuffer(0x8892 /*gl.ARRAY_BUFFER*/, vertexPosBuffer)
+
+      //import scalajs.js.typedarray.Float32Array
+
+      var vertices: Float32Array = new Float32Array(scala.scalajs.js.Array[Float](
+        -0.2f, -0.9f, 0f, 0.4f, -0.26f, 0f, 0f, 0.732134444f, 0f
+      ))
+
+      gl.bufferData(0x8892 /*gl.ARRAY_BUFFER*/, vertices, 0x88E4 /*gl.STATIC_DRAW*/)
+
+      //vertexPosBuffer.itemSize = 3
+      //vertexPosBuffer.numItems = 3
+
+      var vShaderTemplate = """
+        attribute vec2 attrVertex;
+        varying vec2 varyinTexCoordinate;
+        uniform vec2 uniformOffset;
+        void main() {
+          varyinTexCoordinate = attrVertex + uniformOffset;
+          gl_Position = vec4(attrVertex, 0,1);
+        }
+      """
+      var vshader = gl.createShader(0x8B31 /*gl.VERTEX_SHADER*/)
+      gl.shaderSource(vshader, vShaderTemplate)
+      gl.compileShader(vshader)
+
+      var fShaderTemplate = """
+        precision mediump float;
+        varying vec2 varyinTexCoordinate;
+        void main() {
+          gl_FragColor = vec4(varyinTexCoordinate, 0,1);
+        }
+      """
+      var fshader = gl.createShader(0x8B30 /*gl.FRAGMENT_SHADER*/)
+      gl.shaderSource(fshader, fShaderTemplate)
+      gl.compileShader(fshader)
+
+      var program = gl.createProgram()
+      gl.attachShader(program, vshader)
+      gl.attachShader(program, fshader)
+
+      gl.linkProgram(program)
+      gl.useProgram(program)
+
+      /*
+      program.vertexPosAttrib = gl.getAttribLocation(program, "attrVertex")
+      program.offsetUniform = gl.getUniformLocation(program, "uniformOffset")
+
+
+      gl.enableVertexAttribArray(program.vertexPosArray)
+      gl.vertexAttribPointer(program.vertexPosAttrib, vertexPosBuffer.itemSize, gl.FLOAT, false, 0, 0)
+      gl.uniform2f(program.offsetUniform, 1, 1)
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems)
+      */
+
+      //log(vertexPosBuffer.toString)
+
+    } catch {
+      case e: Exception => log("WebGL not supported, E: " + e)
+        // empty string if canvas element not supported
+        return ""
+    }
     /*
       {
         var gl = null
 
-        const fa2s = fa => {
-          gl.clearColor(0.0, 0.0, 0.0, 1.0)
-          gl.enable(gl.DEPTH_TEST)
-          gl.depthFunc(gl.LEQUAL)
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-          return '[' + fa[0] + ', ' + fa[1] + ']'
-        }
+        var fa2s = function fa2s(fa) {
+          gl.clearColor(0.0, 0.0, 0.0, 1.0);
+          gl.enable(gl.DEPTH_TEST);
+          gl.depthFunc(gl.LEQUAL);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          return '[' + fa[0] + ', ' + fa[1] + ']';
+        };
 
-        const maxAnisotropy = gl => {
-          var anisotropy, ext = gl.getExtension('EXT_texture_filter_anisotropic')
-            || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
-            || gl.getExtension('MOZ_EXT_texture_filter_anisotropic')
+        var maxAnisotropy = function maxAnisotropy(gl) {
+          var anisotropy,
+              ext = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
 
-          return ext
-            ? (anisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT), 0 === anisotropy && (anisotropy = 2), anisotropy)
-            : 'unknown'
-        }
+          return ext ? (anisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT), 0 === anisotropy && (anisotropy = 2), anisotropy) : 'unknown';
+        };
 
         var canvas = document.createElement('canvas')
 
@@ -323,8 +411,9 @@ object Fingerprint {
         // Since iOS supports webgl starting from version 8.1 and 8.1 runs on several graphics chips, the results may be different across ios devices, but we need to verify it.
         var result = []
 
-        const vShaderTemplate = 'attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}'
-        const fShaderTemplate = 'precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}'
+
+        var vShaderTemplate = 'attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}';
+        var fShaderTemplate = 'precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}';
 
         var vertexPosBuffer = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer)
@@ -348,6 +437,7 @@ object Fingerprint {
         gl.vertexAttribPointer(program.vertexPosAttrib, vertexPosBuffer.itemSize, gl.FLOAT, !1, 0, 0)
         gl.uniform2f(program.offsetUniform, 1, 1)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems)
+
         if (gl.canvas != null) {
           result.push(gl.canvas.toDataURL())
         }
@@ -433,10 +523,14 @@ object Fingerprint {
         return 'false'
       }
     */
-    false
+    try {
+      navigator.javaEnabled()
+    } catch {
+      case e: Exception => false
+    }
   }
 
-  def cookieEnables: Boolean = {
+  def cookiesEnabled: Boolean = {
     /*
       try {
         if ((navigator in window) && ('cookieEnabled' in window.navigator)) {
@@ -448,7 +542,11 @@ object Fingerprint {
         return 'false'
       }
     */
-    true
+    try {
+      navigator.cookieEnabled
+    } catch {
+      case e: Exception => false
+    }
   }
 
   def osString: String = {
