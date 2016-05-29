@@ -10,7 +10,9 @@ import scala.scalajs.js.typedarray.Float32Array
 import scala.scalajs.js.annotation.JSExport
 import scala.util.hashing.MurmurHash3
 
-
+/**
+ * kudos https://www.reddit.com/r/programming/comments/1ic6ew/anonymous_browser_fingerprinting_in_production/
+ */
 @JSExport
 object Fingerprint {
 
