@@ -133,7 +133,6 @@ object Fingerprint {
           // We must put this node into the body, otherwise
           // Safari Windows does not report correctly.
           canvas.style.display = 'none'
-          document.body.appendChild(canvas)
           var ctx = canvas.getContext('2d')
 
           // draw a black letter "O", 32px Arial.
@@ -154,13 +153,11 @@ object Fingerprint {
               alpha = ctx.getImageData(i, j, 1, 1).data[3]
 
               if (alpha != 255 && alpha != 0 && alpha > 180) {
-                canvas.parentNode.removeChild(canvas)
                 return 'true' // font-smoothing must be on.
               }
             }
           }
 
-          canvas.parentNode.removeChild(canvas)
           // didn't find any non-black pixels - return false.
           return 'false'
         }
@@ -175,6 +172,7 @@ object Fingerprint {
   }
 
   def validateFonts = {
+    //FIXME can be optimised to test fonts in parallel
     val fontArray = Array("Abadi MT Condensed Light", "Adobe Fangsong Std", "Adobe Hebrew", "Adobe Ming Std", "Agency FB", "Aharoni", "Andalus", "Angsana New", "AngsanaUPC", "Aparajita", "Arab", "Arabic Transparent", "Arabic Typesetting", "Arial Baltic", "Arial Black", "Arial CE", "Arial CYR", "Arial Greek", "Arial TUR", "Arial", "Batang", "BatangChe", "Bauhaus 93", "Bell MT", "Bitstream Vera Serif", "Bodoni MT", "Bookman Old Style", "Braggadocio", "Broadway", "Browallia New", "BrowalliaUPC", "Calibri Light", "Calibri", "Californian FB", "Cambria Math", "Cambria", "Candara", "Castellar", "Casual", "Centaur", "Century Gothic", "Chalkduster", "Colonna MT", "Comic Sans MS", "Consolas", "Constantia", "Copperplate Gothic Light", "Corbel", "Cordia New", "CordiaUPC", "Courier New Baltic", "Courier New CE", "Courier New CYR", "Courier New Greek", "Courier New TUR", "Courier New", "DFKai-SB", "DaunPenh", "David", "DejaVu LGC Sans Mono", "Desdemona", "DilleniaUPC", "DokChampa", "Dotum", "DotumChe", "Ebrima", "Engravers MT", "Eras Bold ITC", "Estrangelo Edessa", "EucrosiaUPC", "Euphemia", "Eurostile", "FangSong", "Forte", "FrankRuehl", "Franklin Gothic Heavy", "Franklin Gothic Medium", "FreesiaUPC", "French Script MT", "Gabriola", "Gautami", "Georgia", "Gigi", "Gisha", "Goudy Old Style", "Gulim", "GulimChe", "GungSeo", "Gungsuh", "GungsuhChe", "Haettenschweiler", "Harrington", "Hei S", "HeiT", "Heisei Kaku Gothic", "Hiragino Sans GB", "Impact", "Informal Roman", "IrisUPC", "Iskoola Pota", "JasmineUPC", "KacstOne", "KaiTi", "Kalinga", "Kartika", "Khmer UI", "Kino MT", "KodchiangUPC", "Kokila", "Kozuka Gothic Pr6N", "Lao UI", "Latha", "Leelawadee", "Levenim MT", "LilyUPC", "Lohit Gujarati", "Loma", "Lucida Bright", "Lucida Console", "Lucida Fax", "Lucida Sans Unicode", "MS Gothic", "MS Mincho", "MS PGothic", "MS PMincho", "MS Reference Sans Serif", "MS UI Gothic", "MV Boli", "Magneto", "Malgun Gothic", "Mangal", "Marlett", "Matura MT Script Capitals", "Meiryo UI", "Meiryo", "Menlo", "Microsoft Himalaya", "Microsoft JhengHei", "Microsoft New Tai Lue", "Microsoft PhagsPa", "Microsoft Sans Serif", "Microsoft Tai Le", "Microsoft Uighur", "Microsoft YaHei", "Microsoft Yi Baiti", "MingLiU", "MingLiU-ExtB", "MingLiU_HKSCS", "MingLiU_HKSCS-ExtB", "Miriam Fixed", "Miriam", "Mongolian Baiti", "MoolBoran", "NSimSun", "Narkisim", "News Gothic MT", "Niagara Solid", "Nyala", "PMingLiU", "PMingLiU-ExtB", "Palace Script MT", "Palatino Linotype", "Papyrus", "Perpetua", "Plantagenet Cherokee", "Playbill", "Prelude Bold", "Prelude Condensed Bold", "Prelude Condensed Medium", "Prelude Medium", "PreludeCompressedWGL Black", "PreludeCompressedWGL Bold", "PreludeCompressedWGL Light", "PreludeCompressedWGL Medium", "PreludeCondensedWGL Black", "PreludeCondensedWGL Bold", "PreludeCondensedWGL Light", "PreludeCondensedWGL Medium", "PreludeWGL Black", "PreludeWGL Bold", "PreludeWGL Light", "PreludeWGL Medium", "Raavi", "Rachana", "Rockwell", "Rod", "Sakkal Majalla", "Sawasdee", "Script MT Bold", "Segoe Print", "Segoe Script", "Segoe UI Light", "Segoe UI Semibold", "Segoe UI Symbol", "Segoe UI", "Shonar Bangla", "Showcard Gothic", "Shruti", "SimHei", "SimSun", "SimSun-ExtB", "Simplified Arabic Fixed", "Simplified Arabic", "Snap ITC", "Sylfaen", "Symbol", "Tahoma", "Times New Roman Baltic", "Times New Roman CE", "Times New Roman CYR", "Times New Roman Greek", "Times New Roman TUR", "Times New Roman", "TlwgMono", "Traditional Arabic", "Trebuchet MS", "Tunga", "Tw Cen MT Condensed Extra Bold", "Ubuntu", "Umpush", "Univers", "Utopia", "Utsaah", "Vani", "Verdana", "Vijaya", "Vladimir Script", "Vrinda", "Webdings", "Wide Latin", "Wingdings")
 
     // a font will be compared against all the three default fonts.
@@ -201,7 +199,7 @@ object Fingerprint {
       s.style.fontFamily = baseFont
       h.appendChild(s);
       defaultWidth = defaultWidth + (baseFont -> s.offsetWidth) //width for the default font
-      defaultHeight = defaultHeight + (baseFont -> s.offsetHeight) //height for the defualt font
+      defaultHeight = defaultHeight + (baseFont -> s.offsetHeight) //height for the default font
       h.removeChild(s)
     }
 
@@ -307,10 +305,6 @@ object Fingerprint {
       val canvas = dom.document.createElement("canvas").asInstanceOf[Canvas]
       val gl = canvas.getContext("webgl").asInstanceOf[WebGLRenderingContext]
 
-
-
-
-
       //FIXME maybe unsupported by scalajs
       // || canvas.getContext("experimental-webgl")
 
@@ -323,8 +317,10 @@ object Fingerprint {
         -0.2f, -0.9f, 0f, 0.4f, -0.26f, 0f, 0f, 0.732134444f, 0f
       ))
 
+      //FIXME constants in gl are somewhere else, using numbers for now
       gl.bufferData(0x8892 /*gl.ARRAY_BUFFER*/, vertices, 0x88E4 /*gl.STATIC_DRAW*/)
 
+      //FIXME does not work
       //vertexPosBuffer.itemSize = 3
       //vertexPosBuffer.numItems = 3
 
