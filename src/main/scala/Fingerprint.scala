@@ -173,6 +173,40 @@ object Fingerprint {
     true
   }
 
+  def timezone: String = {
+
+    /*
+    try {
+      var offset = new Date().getTimezoneOffset()
+      var o = Math.abs(offset)
+      return (offset < 0 ? '+' : '-') + ('00' + Math.floor(o / 60)).slice(-2) + ':' + ('00' + (o % 60)).slice(-2)
+    } catch (err) {
+      return 'uknown'
+    }
+    */
+
+    "timezone"
+  }
+
+  def gpuString: String = {
+    /*
+    try {
+      var canvas = document.createElement('canvas')
+      var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      var dbgRenderInfo = gl.getExtension('WEBGL_debug_renderer_info')
+
+      if (dbgRenderInfo != null) {
+        return gl.getParameter(dbgRenderInfo.UNMASKED_RENDERER_WEBGL)
+      }
+
+      return gl.getParameter(gl.RENDERER)
+    } catch (err) {
+      return 'unknown'
+    }
+    */
+    "gpu"
+  }
+
   /**
    * There is no way for javascript to access system resources, yes/no approach
    * based on http://www.lalit.org/lab/javascript-css-font-detect/
