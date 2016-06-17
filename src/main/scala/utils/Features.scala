@@ -38,9 +38,11 @@ object Features {
       }
     */
     try {
-      navigator.javaEnabled()
+      val javaEnabled = navigator.javaEnabled()
+      log("Java enabled:"+javaEnabled)
+      javaEnabled
     } catch {
-      case e: Exception => false
+      case e: Throwable => false
     }
   }
 

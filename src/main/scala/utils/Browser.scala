@@ -11,6 +11,12 @@ object Browser {
 
 
   def browserString: String = {
+    val ua = navigator.userAgent
+    val r = """(?i)(opera|chrome|safari|firefox|msie|trident)""".r
+    val m = r.findFirstIn(ua)
+    log("Browser "+m)
+
+    m.getOrElse("unknown")
     /*
     try {
       var ua = navigator.userAgent,
@@ -37,7 +43,7 @@ object Browser {
       return 'unknown'
     }
     */
-    "browser"
+
   }
 
   def canvasString: String = {

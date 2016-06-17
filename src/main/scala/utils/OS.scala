@@ -49,29 +49,35 @@ object OS {
       true
     } else
       false
+
     log("Is really mobile: " + isReallyMobile)
 
-    if (oscpu.isDefined) {
+    try {
+      if (oscpu.isDefined) {
+        val lies = if (oscpu.get matches ".*win.*|.*Windows.*|.*Windows Phone.*") {
+          true
+        } else if (oscpu.get matches ".*linux.*|.*Linux.*|.*Android.*") {
+          true
+        } else if (oscpu.get matches ".*mac.*|.*Mac.*|.*iOS.*") {
+          true
+        } else if (oscpu.get matches ".*win.*|.*linux.*|.*mac.*|.*other.*") {
+          true
+        } else
+          false
+        //    if (typeof navigator.plugins === "undefined" && os !== "Windows" && os !== "Windows Phone") {
+        //      //We are are in the case where the person uses ie, therefore we can infer that it's windows
+        //      return true;
+        //    }
 
-      val lies = if (oscpu.get matches ".*win.*|.*Windows.*|.*Windows Phone.*") {
-        true
-      } else if (oscpu.get matches ".*linux.*|.*Linux.*|.*Android.*") {
-        true
-      } else if (oscpu.get matches ".*mac.*|.*Mac.*|.*iOS.*") {
-        true
-      } else if (oscpu.get matches ".*win.*|.*linux.*|.*mac.*|.*other.*") {
-        true
-      } else false
-
-      //    if (typeof navigator.plugins === "undefined" && os !== "Windows" && os !== "Windows Phone") {
-      //      //We are are in the case where the person uses ie, therefore we can infer that it's windows
-      //      return true;
-      //    }
-
-      lies
-    } else
-      false
-
+        log("OS lies " + lies)
+        lies
+      } else {
+        log("OS lies const false")
+        false
+      }
+    } catch {
+      case t:Throwable => false
+    }
   }
 
 

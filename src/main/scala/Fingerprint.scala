@@ -11,6 +11,9 @@ import scala.scalajs.js.typedarray.Float32Array
 import scala.scalajs.js.annotation.JSExport
 import scala.util.hashing.MurmurHash3
 
+object X {
+  Fingerprint.debug=true
+}
 /**
   * kudos https://www.reddit.com/r/programming/comments/1ic6ew/anonymous_browser_fingerprinting_in_production/
   */
@@ -19,39 +22,36 @@ object Fingerprint {
 
   val navigator = window.navigator
 
-  var debug: Boolean = false
-
-  def apply(debug: Boolean = false) = {
-      this.debug=debug
-  }
+  var debug = true
 
   def log(msg: String) = if (debug) dom.console.log(msg)
 
   @JSExport
   def get(
-           fonts: Boolean = true,
-           canvas: Boolean = true,
-           webgl: Boolean = true,
-           languages: Boolean = true,
-           os: Boolean = true,
-           java: Boolean = true,
-           cookies: Boolean = true
+           useFonts: Boolean = true,
+           useCanvas: Boolean = true,
+           useWebgl: Boolean = true,
+           useLanguages: Boolean = true,
+           useOs: Boolean = true,
+           useJava: Boolean = true,
+           useCookies: Boolean = true,
+           useSL: Boolean = true
          ): String = {
 
     try {
+      dom.console.log("Log enabled:"+debug)
 
       // plugins
-      val fontsvalue = if (fonts) Fonts.validateFonts else None
-      val canvasPrint = if (canvas) Some(Browser.canvasString) else None
-      val webglPrint = if (webgl) Some(WebGL.webglString) else None
-      val langs = if (languages) Language.isLyingAboutLanguage else None
-      val osvalue = if (os) OS.isLyingAboutOS else None
-      val javatest = if (java) Features.javaEnabled else None
-      val cookiestest = if (cookies) Features.cookiesEnabled else None
-
-      log("java: " + javatest)
-      log("cookies: " + cookiestest)
-
+      val fontsValue = if (useFonts) Fonts.validateFonts else None
+      val fontsSmoothing = if (useFonts) Fonts.fontSmoothingEnabled else None
+      val canvasPrint = if (useCanvas) Some(Browser.canvasString) else None
+      val webglPrint = if (useWebgl) Some(WebGL.webglString) else None
+      val langs = if (useLanguages) Language.isLyingAboutLanguage else None
+      val osvalue = if (useOs) OS.isLyingAboutOS else None
+      val javatest = if (useJava) Features.javaEnabled else None
+      val cookiestest = if (useCookies) Features.cookiesEnabled else None
+      val browser = if (useCookies) Browser.browserString else None
+      val silverlight = if (useSL) Features.silverlightPluginList else None
 
       /*
         var getFingerprint = () => {
@@ -73,15 +73,18 @@ object Fingerprint {
           return hash + '.' + checksum(hash)
         }
       */
-      log("Screen: " + screen.width)
-      val toHash = window.navigator.userAgent + "|" + ":" + screen.width // + "x" + screen.height //+ ":" + screen.availWidth + "x" + screen.availHeight +":")
-      //        + screen.colorDepth + ":" + "screen.deviceXDPI" + ":" + "screen.deviceYDPI") +
-      //        + "|" + pluginList
-      log("Plugins:" + Features.pluginList)
-      Fonts.fontSmoothingEnabled
-      MurmurHash3.stringHash(toHash).toString
+
+      val signature = browser + canvasPrint.get + useWebgl + cookiestest + fontsValue +
+        fontsSmoothing + "FF" + javatest + osvalue + silverlight
+
+      MurmurHash3.stringHash(signature).toString
+
+      // TODO add checksum
+
     } catch {
-      case t: Throwable => "Fingerprint error" + t
+      case t: Throwable =>
+        log("Fingerprint error -> " + t)
+        ""
     }
   }
 
