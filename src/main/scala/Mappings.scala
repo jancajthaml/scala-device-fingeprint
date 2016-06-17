@@ -12,6 +12,7 @@ trait Plugin extends Object {
 object screen extends GlobalScope {
   val width: Object = native   // FIXME does not work
   val height: Object = native   // FIXME does not work
+  val fontSmoothingEnabled : Any = native
 //  val availWidth: Int = native
 //  val availHeight: Int = native
 }

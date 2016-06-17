@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head lang="en"></head>
+<body>
+<script type="text/javascript" src="../scala-device-fingerprint-opt.js"></script>
+
+Fingerprint output from full optimized JS:
+<pre id="p1"></pre>
+
+<script>
+    var fp = scalajs.fingerprint.Fingerprint().get(debug=true);
+    document.getElementById("p1").innerHTML = fp;
+</script>
+
+
+</body>
+
+</html>

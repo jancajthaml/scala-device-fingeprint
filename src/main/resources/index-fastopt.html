@@ -4,11 +4,11 @@
 <body>
 <script type="text/javascript" src="../scala-device-fingerprint-fastopt.js"></script>
 
-Fingerprint output:
-<pre id="p1">Hello World!</pre>
+Fingerprint output from fast optimized JS:
+<pre id="p1"></pre>
 
 <script>
-    var fp = scalajs.fingerprint.Fingerprint().get();
+    var fp = scalajs.fingerprint.Fingerprint(true).get(debug=true);
     document.getElementById("p1").innerHTML = fp;
 </script>
 
