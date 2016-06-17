@@ -4,7 +4,7 @@ enablePlugins(ScalaJSPlugin)
 name := "scala-device-fingerprint"
 
 libraryDependencies ++= Seq(
-  "org.scala-js" %%% "scalajs-dom" % "0.9.0"
+  "org.scala-js" %%% "scalajs-dom" % "0.9.1"
 )
 
 scalaVersion := "2.11.7"
