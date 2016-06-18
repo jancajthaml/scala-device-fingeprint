@@ -174,7 +174,38 @@ object OS {
                   ? 'unknown'
                   : '32'
       } catch (err) {
-        bits = '32'
+        /* pass */
+      }
+
+      if (typeof bits === 'undefined') {
+        switch ('' + Math.tan('-1e300')) {
+          case '-1.4214488238747245': {
+            if (typeof os === 'undefined') {
+              os = 'Linux'
+            }
+            bits = '64'
+            break
+          }
+          case '0.8831488831618285': {
+            if (typeof os === 'undefined') {
+              os = 'Linux'
+            }
+            bits = '32'
+            break
+          }
+          case '-4.987183803371025': {
+            if (typeof os === 'undefined') {
+              os = 'Window'
+            }
+            bits = '32'
+            break
+          }
+          default: {
+            os = 'Mac OS X'
+            bits = '32'
+            break
+          }
+        }
       }
 
       return os + version + ' ' + bits + ' bits'

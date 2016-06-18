@@ -61,10 +61,13 @@ object Fingerprint {
             _webgl() +
             _cookie() +
             _fonts() +
+            _timezone() +
             _font_smoothing() +
             _formfields() +
             _java() +
             _os() +
+            _sound() +
+            _gpu() +
             _silverlight()
           )
 
@@ -77,9 +80,11 @@ object Fingerprint {
       val signature = browser + canvasPrint.get + useWebgl + cookiestest + fontsValue +
         fontsSmoothing + "FF" + javatest + osvalue + silverlight
 
-      MurmurHash3.stringHash(signature).toString
+      val hash = MurmurHash3.stringHash(signature).toString
 
-      // TODO add checksum
+      val checksum = Checksum.calculate(hash).toString
+
+      s"$hash.$checksum"
 
     } catch {
       case t: Throwable =>
